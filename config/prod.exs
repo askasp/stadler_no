@@ -15,8 +15,7 @@ config :stadler_no, StadlerNoWeb.Endpoint,
   load_from_system_env: true,
   # Needed for Phoenix 1.2 and 1.4. Doesn't hurt for 1.3.
   http: [port: {:system, "PORT"}],
-  secret_key_base: "${SECRET_KEY_BASE}",
-  url: [host: "stadler.stadler.no", port: 443],
+  url: [host: "stadler.stadler.no", port: 4001],
   check_origin: ["//stadler.stadler.no", "//localhost", "//stadler.no"],
   cache_static_manifest: "priv/static/cache_manifest.json",
   # To bust cache during hot upgrades
@@ -25,8 +24,6 @@ config :stadler_no, StadlerNoWeb.Endpoint,
 # Do not print debug messages in production
 config :logger, level: :info
 
-
-config :otp_analytics, :ipinfo_api_key, System.fetch_env!("ip_info_key")
 
 # ## SSL Support
 #

@@ -17,7 +17,7 @@ defmodule StadlerNoWeb.Router do
   end
 
   pipeline :admins_only do
-    plug :basic_auth, username: "admin", password: Application.get_env(:prova_no, :dashboard_pwd)
+    plug :basic_auth, username: "admin", password: Application.get_env(:stadler_no, :dashboard_pwd)
   end
 
   import Phoenix.LiveDashboard.Router
