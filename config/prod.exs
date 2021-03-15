@@ -15,7 +15,7 @@ config :stadler_no, StadlerNoWeb.Endpoint,
   load_from_system_env: true,
   # Needed for Phoenix 1.2 and 1.4. Doesn't hurt for 1.3.
   http: [port: {:system, "PORT"}],
-  url: [host: "stadler.stadler.no", port: 4001],
+  url: [host: "stadler.no", port: 4001],
   check_origin: ["//stadler.stadler.no", "//localhost", "//stadler.no"],
   cache_static_manifest: "priv/static/cache_manifest.json",
   # To bust cache during hot upgrades
