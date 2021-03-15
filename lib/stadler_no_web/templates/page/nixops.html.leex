@@ -1,0 +1,331 @@
+  <section>
+   <h1 class="text-stadler text-xl">
+    Nixops & Liveview
+   </h1>
+   <img class="w-full" src="<%= Routes.static_path(StadlerNoWeb.Endpoint, "/images/phoenix.png")%>" </img>
+   <p class="text-white opacity-67 mt-4">
+    Phoenix liveview enables server-side-rendered &#39;&#39;single-page&#39;&#39; web pages. It does this by the power of a brand-new technology (not really) called websockets.
+   </p>
+   <p class="text-white opacity-67 mt-4">
+    Liveview sets up a websocket connection between the client and the server. Commands goes from the client, and an updated html is sent back. Morphdom then seemlessly updates the view.
+   </p>
+   <p class="text-white opacity-67 mt-4">
+    Why isn&#39;t this implemented in other backend languages you might wonder. Well, mostly because websockets are statefull, and most languages are not optimised for that.
+   </p>
+   <p class="text-white opacity-67 mt-4">
+    In Elixir/Erlang state is trivial. This is because the latter is an (unintentional) implementation of the actor model. Each websocket connection is an totally isolated process (actor) that can only communicate with other actors through message passing. I.e. Share by communicating, don&#39;t communicate by sharing (i&#39;m looking at you C++)
+   </p>
+   <p class="text-white opacity-67 mt-4">
+    NixOS is a declerative linux distribution built around the nix package manager. It enables, and encourages, users to declare their system in a version controlled config file. This makes rebuilding and duplication trivial. This is possible as nix packages are 100% declerative. Each package is built by pure functions, guaranteeing that it is identical each time it is built.
+   </p>
+   <p class="text-white opacity-67 mt-4">
+    Nixops allows you to define a NixOS system, build it locally, and ship it to one or more remote NixOS machines.
+   </p>
+   <h2 class="text-stadler text-lg mt-4">
+    What&#39;s wrong with Kubernetes?
+   </h2>
+   <p class="text-white opacity-67 mt-2">
+    Nothing! It seems that kubernetes is about to become the de-facto standard for hosting. At-least for companies that are worried about cloud-provider lock-in (which they should be). Also, with microk8s it&#39;s cheap to spin up a cluster for hobby projects as well. The reason I, currently, choose to use nixops for my projects are.
+   </p>
+   <ul class="list-disc text-white opacity-67 mt-4 pl-8">
+    <li>
+     No need for a container registry
+    </li>
+    <li>
+     Nix-shell on the default.nix makes a shell with all dependencies to build and run the project
+    </li>
+    <li>
+     I can run it on a VM without a load balancer (cheap)
+    </li>
+    <li>
+     I wanted to try something new
+    </li>
+   </ul>
+   <h2 class="text-stadler text-lg mt-4">
+    Making the nix package derivation
+   </h2>
+   <p class="text-white opacity-67">
+    First create a new phoenix project with
+   </p>
+   <pre class="text-white opacity-67 text-xs "> <code> mix phx.new nixops_live --live --no-ecto </code> </pre>
+   <p class="text-white opacity-67">
+    You can easily test it by running
+   </p>
+   <pre class=" text-xs text-white opacity-67 items-center content-center"> <code> mix phx.server </code> </pre>
+   <p class="text-white opacity-67">
+    and go to localhost:4000.
+   Try to search in the form to se server side rendered dynamic content in action
+   </p>
+   <p class="text-white opacity-67">
+    Now, we create a derivation for how nix should build this project. Create a new file named default.nix and fill in
+   </p>
+   <pre class=" text-xs text-white opacity-67">
+    <code class="px-4 text-xs">
+with import <nixpkgs> {};
+let stadler_no = {}:
+ stdenv.mkDerivation rec {
+  name = &#34;stadler_no&#34;;
+  src = ./.;
+  buildInputs = [elixir git nodejs];
+
+
+  buildPhase = &#39;&#39;
+  mkdir -p $PWD/.hex
+  export HOME=$PWD/.hex
+  #Certs are only needed if you pull repos directly from github
+  export GIT_SSL_CAINFO=/etc/ssl/certs/ca-certificates.crt
+  export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+  mix local.rebar --force
+  mix local.hex --force
+  mix deps.get
+  MIX_ENV=prod mix compile
+  npm install --prefix ./assets
+  npm run deploy --prefix ./assets
+  mix phx.digest
+  MIX_ENV=prod mix release
+
+  &#39;&#39;;
+  installPhase = &#39;&#39;
+    mkdir -p $out
+    cp -rf _build/prod/rel/stadler_no/* $out/
+
+  &#39;&#39;;
+};
+in
+stadler_no
+     </nixpkgs>
+    </code>
+   </pre>
+   <p class="text-white opacity-67">
+    There are multiple things going on here. For a more thorough explanation of nix packages I recommend this
+    <a href="https://christine.website/blog/nixos-desktop-flow-2020-04-25">
+     this
+    </a>
+    blogpost by Christine Dodrill.
+What you need to pay attention to is
+   </p>
+   <ol class="list-decimal text-white opacity-67 ml-8  mt-4 mb-4">
+    <li>
+     buildInputs -- (The requirements to build)
+    </li>
+    <li>
+     buildPhase --  (A bash recipe for building phoenix releases)
+    </li>
+    <li>
+     install phase -- (Copying the binary to an artifact directory)
+    </li>
+   </ol>
+   <p class="text-white opacity-67">
+    You can test this by running
+   </p>
+   <pre class=" text-xs text-white opacity-67"> <code> nix-build default.ex --option sandbox false </code> </pre>
+   <p class="text-white opacity-67">
+    The latter is needed as we fetch deps from the internet. If successfull you should
+see a result folder in your directory.
+   </p>
+   <p class="text-white opacity-67">
+    Note: the default.nix can also be used to set up a development environment. Simply run
+   </p>
+   <pre class=" text-xs text-white opacity-67"> <code> nix-shell defualt.nix </code> </pre>
+   <p class="text-white opacity-67">
+    and you will drop into a shell with all the needed dependencies installed. This is
+supernice when multiple devs are working on the same project
+   </p>
+   <h2 class="text-stadler text-lg mt-4">
+    Making the service
+   </h2>
+   <p class="text-white opacity-67">
+    nix-build only compile the code, is does not run it. Next step is to set up a service for that. A systemd service to be exact. Create the file service.nix and fill it with
+   </p>
+   <pre class=" text-xs text-white opacity-67 text-xs"> <code>
+{config, lib, pkgs, ...}:
+let stadler_no_build = pkgs.callPackage ./default.nix {};  #Build the derivation described in default.nix
+    cfg = config.services.stadler_no;
+in {
+    #Set configurable options
+    options.services.stadler_no.enable = lib.mkEnableOption &#34;stadler_no&#34;;
+    options.services.stadler_no.port = lib.mkOption {
+        type = lib.types.int;
+        default = 4000;
+    };
+
+    config = lib.mkIf cfg.enable {
+    networking.firewall.allowedTCPPorts = [ cfg.port ];
+    #Define the service
+    systemd.services.stadler_no = {
+        description = &#34;My home page stadler no&#34;;
+        environment = {
+            HOME=&#34;/root&#34;;
+            PORT=&#34;${toString cfg.port}&#34;;
+            RELEASE_TMP=&#34;/tmp&#34;;
+            #Secrets will be injected at a later time
+            ADMIN_PWD=&#39;&#39;$(cat /run/keys/admin_pwd)&#39;&#39;;
+            Stadler_NO_SKB=&#39;&#39;$(cat /run/keys/stadler_no_skb)&#39;&#39;;
+            Stadler_NO_LV_SS=&#39;&#39;$(cat /run/keys/stadler_no_lv_ss)&#39;&#39;;
+            };
+
+     after = [ &#34;network-online.target&#34; ];
+     wantedBy = [ &#34;network-online.target&#34; ];
+
+    serviceConfig = {
+        DynamicUser = &#34;true&#34;;
+        PrivateDevices = &#34;true&#34;;
+        ProtectKernelTunables = &#34;true&#34;;
+        ProtectKernelModules = &#34;true&#34;;
+        ProtectControlGroups = &#34;true&#34;;
+        RestrictAddressFamilies = &#34;AF_INET AF_INET6&#34;;
+        LockPersonality = &#34;true&#34;;
+        RestrictRealtime = &#34;true&#34;;
+        SystemCallFilter = &#34;@system-service @network-io @signal&#34;;
+        SystemCallErrorNumber = &#34;EPERM&#34;;
+
+	#This command is run when the systemd service starts
+        ExecStart = &#34;${stadler_no_build}/bin/stadler_no start&#34;;
+        Restart = &#34;always&#34;;
+        RestartSec = &#34;5&#34;;
+    };
+    };
+};
+} </code> </pre>
+   <p class="mt-2 text-white opacity-67">
+    Commit the code and push it to gitlab
+   </p>
+   <h2 class="text-stadler text-lg mt-4">
+    Nixops
+   </h2>
+   <p class="text-white opacity-67 mt-4">
+    It&#39;s time to set up the server. You can naturally use the same repo as before, but I like creating a new one as I have many projects in the same deployment.
+   </p>
+   <p class="text-white opacity-67 mt-4">
+   </p>
+   <p class="text-white opacity-67 mt-4">
+    Create a new directory named nixops_do, and generate a ssh keypair here. Be sure to place the keys in the nixops_do, and not overwrite the one in ~/.ssh. Keep the passphrase empty
+   </p>
+   <p class="text-white opacity-67 mt-4">
+   </p>
+   <p class="text-white opacity-67 mt-4">
+    After this, go to digitalocean.com, create an ubuntu droplet, and add the newly generated key under authorized hosts Tutorial
+   </p>
+   <p class="text-white opacity-67 mt-4">
+   </p>
+   <p class="text-white opacity-67 mt-4">
+    Make three empty files, nixops_do.nix, nixops_do_hw.nix, and nixops_do_secrets.nix The first will describe what is running on the machine, the second describes the machine, and the latter injects secrets as env variables
+   </p>
+   <h3 class="text-white opacity-67 text-lg font-bold mt-2">
+    nixops_do.nix
+   </h3>
+   <pre class="text-white opacity-67 text-xs"> <code>
+## Fetch service from gitlab
+stadler_no = builtins.fetchGit {
+      url = &#34;https://gitlab.com/akselsk/stadler_no&#34;;
+      ref = &#34;master&#34;;
+      rev = &#34;82b0e190d10c70c1878d1d61e3b7e1618f14d822&#34;;
+};
+
+in
+    let backend= { config, pkgs, ... }: {
+  	environment.systemPackages = with pkgs; [cacert git vim ];
+  	 # Add public key to enable updates
+  	users.users.root = {
+    	openssh.authorizedKeys.keys = [&#34;ssh-ed25519 **pubkey** aksel@stadler.no&#34;];
+  	};
+
+        services.openssh.enable = true;
+  	#Import the service file made previously
+  	imports = [
+      	&#34;${stadler_no.outPath}/service.nix&#34;
+
+  	];
+        networking.firewall.allowedTCPPorts = [ 22 4343 80 443 ];
+        # Enable the service
+  	services.stadler_no.enable = true;
+  	services.stadler_no.port= 4002;
+  	services.openssh.permitRootLogin = &#34;yes&#34;;
+
+ 	#Allow the erlang vm to write error logs to disk
+	systemd.tmpfiles.rules = [
+  	&#34;d /root/tmp 0755 root root&#34;
+	];
+	#Start nginx procy pass
+        services.nginx = {
+            enable = true;
+            recommendedProxySettings = true;
+            recommendedTlsSettings = true;
+            virtualHosts.&#34;stadler.no&#34; =  {
+              enableACME = true;
+              forceSSL = true;
+              locations.&#34;/&#34; = {
+                proxyPass = &#34;http://127.0.0.1:4002&#34;;
+                proxyWebsockets = true; # needed if you need to use WebSocket
+              };
+            };
+        };
+        security.acme.acceptTerms = true;
+	security.acme.certs = {
+  	&#34;stadler.no&#34;.email = &#34;aksel@stadler.no&#34;;
+	};
+    	};
+in {
+  network.description = &#34;Test server&#34;;
+  #The server name, must have a corresponding hardware name
+  asknixops1= backend;
+
+  #If desireably to deploy to multiple machines
+  #asknixops2= backend
+}
+    </code>
+   </pre>
+   <h3 class="text-white opacity-67 text-lg font-bold mt-2">
+    nixops_hw.nix
+   </h3>
+   <pre class="text-white opacity-67 text-xs">
+    <code>
+# Hardware config
+ let machine = { config, pkgs, ... }: {
+    deployment.targetEnv = &#34;digitalOcean&#34;;
+    deployment.digitalOcean.enableIpv6 = true;
+    deployment.digitalOcean.region = &#34;ams3&#34;;
+    deployment.digitalOcean.size = &#34;s-1vcpu-1gb&#34;;
+    deployment.digitalOcean.vpc_uuid= &#34;default-ams3&#34;;
+   # deployment.digitalOcean.authToken = &#34;Doesn&#39;t seem to work&#34;;
+  };
+in
+{
+  resources.sshKeyPairs.ssh-key = {
+    publicKey = builtins.readFile ./tstKey.pub;
+    privateKey = builtins.readFile ./tstKey;
+  };
+
+  asknixops1= machine; #Much mach a corresponding server
+
+  #asknixops2 = machine;
+
+}
+    </code>
+   </pre>
+   <h3 class="text-white opacity-67 text-lg font-bold mt-2">
+    nixops_secrets.nix
+   </h3>
+   <pre class="text-white opacity-67 text-xs"> <code> asknixops1= { config, pkgs, ... }:
+    {
+      deployment.keys.admin_pwd.text = &#34;***&#34;;
+      deployment.keys.stadler_no_skb = &#34;**&#34;;
+      deployment.keys.stadler_no_lv_ss = &#34;**&#34;;
+    };
+} </code> </pre>
+   <p class="text-white opacity-67">
+    Create a deployment by running
+   </p>
+   <pre class="text-white opacity-67 text-xs"> <code> nixops create ./nixops_do.nix ./nixops_do_hw.nix ./nixops_do_secrets.nix -d nixops_do </code> </pre>
+   <p class="text-white opacity-67">
+    and ship it with
+   </p>
+   <pre class="text-white opacity-67 text-xs"> <code> nixops deploy -d nixops_do </code> </pre>
+   <p class="text-white opacity-67"> For debugging you can ssh into the machine with </p>
+   <pre class="text-white opacity-67 text-xs"> <code> nixops ssh *deployname* *machine_name* </code> </pre>
+   <p class="text-white opacity-67">
+    To print debug logs run the following
+   </p>
+   <pre class="text-white opacity-67 text-xs">  <code> systemctl status *service_name* or journalctl -u *service_name* </code> </pre>
+  </section>
+
