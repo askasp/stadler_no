@@ -33,24 +33,17 @@ defmodule StadlerNoWeb.PageLive do
 
   def render(assigns) do
     ~L"""
-    <%= case @page do %>
-     	<% "home" -> %>
      	<%= menu_page(assigns) %>
-     	<% "projects" -> %>
-        <%= menu_page(assigns) %>
-     	<%= projects_page(assigns) %>
-     	<% "led" -> %>
-            <%= menu_page(assigns) %>
-     	    <%= africa_burn(assigns) %>
+    <%= case @page do %>
+     	<% "home" -> %> write about axel
+     	<% "projects" -> %> <%= projects_page(assigns) %>
+     	<% "live_chat" -> %> <%= plain_markdown(assigns, 'https://raw.githubusercontent.com/askasp/live_tea/main/Blag.md') %>
+     	<% "led" -> %> <%= plain_markdown(assigns, 'https://gitlab.com/akselsk/led-thermometer/-/raw/master/README.md') %>
      	<% "nixops" -> %>
-        <%= menu_page(assigns) %>
      	<%= nixops_page(assigns) %>
      	<% "es" -> %>
-        <%= menu_page(assigns) %>
      	<%= home_made_es_page(assigns) %>
-
      	<% "live_md" -> %>
-        <%= menu_page(assigns) %>
      	<%= plain_markdown(assigns,'https://gitlab.com/akselsk/live_markdown/-/raw/master/README.md') %>
       <% _ -> %>  <% home_page(assigns) %>
     <% end %>
@@ -71,6 +64,23 @@ defmodule StadlerNoWeb.PageLive do
   def projects_page(assigns) do
     ~L"""
     <section>
+
+
+    <%= project_page_intro(%{
+    	image: false,
+    	img: "https://i.imgur.com/NWaNe3l.png",
+    	title: "Live chat with CQRS",
+    	link: "/live_chat",
+    	description: "
+    	    How make a chatroom app using phoenix liveview and the CQRS pattern
+    	    ",
+    	git_link: "htts://gitlab.com/akselsk/live_tea",
+    	demo_link: "livechat.stadler.no"
+
+    	}) %>
+    	
+
+
     <%= project_page_intro(%{
     	image: "/images/saunandtermo.png",
     	title: "Led Thermometer for Africa Burn",
@@ -79,6 +89,7 @@ defmodule StadlerNoWeb.PageLive do
     	    In Africa burn 2019 we gifted a sauna to the community. We installed a 3m tall LED thermometer so bypassers could see the current sauna temperature. Here is a walkthrough of the code and how I wired it all up
     	    ",
     	git_link: "htts://gitlab.com/akselsk/led-thermometer",
+    	demo_link: nil,
 
     	}) %>
     	
@@ -88,6 +99,7 @@ defmodule StadlerNoWeb.PageLive do
     	link: "/nixops",
     	description: "Phoenix liveview is the new go-to framework for building SPAs in much the same way that 2021 is the year of the desktop (fingers crossed). Its killer feature is server-side-rendered dynamic webpages (it is as great as it sounds). Nixops is for people that are too cool for kubernetes",
     	git_link: nil,
+    	demo_link: nil,
 
     	}) %>
 
@@ -97,6 +109,7 @@ defmodule StadlerNoWeb.PageLive do
     	link: "https://kronavenn.web.app",
     	description: "Koronavenn A service made during the 2020 pandemic. The purpose was to connect quaranteened people so everyone had a call buddy or a 'corona-friend' (which is the title in Norwegian)",
     	git_link: nil,
+    	demo_link: nil,
 
     	}) %>
 
@@ -106,7 +119,8 @@ defmodule StadlerNoWeb.PageLive do
     	title: "Live Markdown (readme)",
     	link: "/live_md",
     	description: "Markdown to html service for liveview applications. Gets the markdown from an url, parses it, and stores the html inmemory for faster rendering",
-    	git_link: "https://gitlab.com/akselsk/live_markdown"
+    	git_link: "https://gitlab.com/akselsk/live_markdown",
+    	demo_link: nil,
 
     	}) %>
 
@@ -119,6 +133,7 @@ defmodule StadlerNoWeb.PageLive do
     	              using a hash ring.
     	              Includes an even more naive cqrs module",
     	git_link: "https://gitlab.com/akselsk/otp_es",
+    	demo_link: nil,
     	}) %>
 
     
@@ -130,7 +145,12 @@ defmodule StadlerNoWeb.PageLive do
     ~L"""
     <div class="flex flex-wrap mt-2 -mx-2">
     <div class="w-full lg:w-1/2 px-2 ">
-    <img class="w-full bg-koronavenn" src=" <%= Routes.static_path(StadlerNoWeb.Endpoint, @image)  %>"/>
+    <%= if @image do %>
+        <img class="w-full bg-koronavenn" src=" <%= Routes.static_path(StadlerNoWeb.Endpoint, @image)  %>"/>
+    <% else %>
+        <img class="w-full bg-koronavenn" src=" <%= @img %>"/>
+    <% end %>
+
     </div>
     <div class="w-full lg:w-1/2  ">
     <%= live_patch @title, to: @link %>
@@ -141,6 +161,10 @@ defmodule StadlerNoWeb.PageLive do
      <a href="<%=@git_link%>" > Gitlab Repo </a>
      <% end %>
 
+    <%= if @demo_link do %>
+    </br>
+     <a href="<%=@demo_link%>" > Demo </a>
+     <% end %>
 
     </div>    
     </div>    

@@ -12,26 +12,48 @@
 @tailwind utilities;
 
 body{
-  font-family: 'Space Mono', monospace;
+  font-family: 'Montserrat', monospace;
   max-width: 45em;
   margin: 16px auto auto;
   padding: 32px;
+  font-weight: 400;
   color: rgba(255,255,255,0.67);
 }
 
 h1{
+    font-family: 'Space Mono', monospace;
     color: #f59e0b ;
     font-size: 1.25rem;
     line-height: 1.75rem;
 }
+p{padding-top:0.5rem; padding-bottom:0.5rem}
 
 h2{
-    color: #f9e0b;
+    color: #f59e0b;
     font-size: 1.125rem;
     line-height: 1.75rem;
     margin-top: 0.5rem;
 }
 
+
+h3{
+    color: #f59e0b;
+    font-size: 1.0rem;
+    line-height: 1.75rem;
+    margin-top: 0.5rem;
+}
+
+
+ul {
+  list-style-type: disc;
+  margin-left:2rem;
+}
+
+ol {
+  margin-top: 1rem;
+  list-style-type: decimal;
+  margin-left:2rem;
+}
 .centered {
   position: fixed;
   top: 50%;
@@ -62,6 +84,7 @@ h2{
 a{
   color: rgba(255,255,255,0.67);
    width: auto;
+
   cursor: pointer;
   padding-bottom: 8px;
   border-radius: 2px;
