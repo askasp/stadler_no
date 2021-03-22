@@ -35,7 +35,7 @@ defmodule StadlerNoWeb.PageLive do
     ~L"""
      	<%= menu_page(assigns) %>
     <%= case @page do %>
-     	<% "home" -> %> write about axel
+     	<% "home" -> %>
      	<% "projects" -> %> <%= projects_page(assigns) %>
      	<% "live_chat" -> %> <%= plain_markdown(assigns, 'https://raw.githubusercontent.com/askasp/live_tea/main/Blag.md') %>
      	<% "led" -> %> <%= plain_markdown(assigns, 'https://gitlab.com/akselsk/led-thermometer/-/raw/master/README.md') %>
