@@ -26,13 +26,14 @@ h1{
     font-size: 1.25rem;
     line-height: 1.75rem;
 }
-p{padding-top:0.5rem; padding-bottom:0.5rem}
+p{padding-top:0.8rem; padding-bottom:0.8rem}
 
 h2{
     color: #f59e0b;
     font-size: 1.125rem;
     line-height: 1.75rem;
     margin-top: 0.5rem;
+    font-weight: 500;
 }
 
 
@@ -41,6 +42,27 @@ h3{
     font-size: 1.0rem;
     line-height: 1.75rem;
     margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+
+
+h4{
+    color: #f59e0b;
+    font-size: 1.0rem;
+    line-height: 1.75rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+
+}
+
+h5{
+    color: #f59e0b;
+    font-size: 0.9rem;
+    line-height: 1.7rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+
 }
 
 
@@ -50,7 +72,7 @@ ul {
 }
 
 ol {
-  margin-top: 1rem;
+  margin-top: 2rem;
   list-style-type: decimal;
   margin-left:2rem;
 }
@@ -84,17 +106,23 @@ ol {
 a{
   color: rgba(255,255,255,0.67);
    width: auto;
+   font-weight: 500;
 
   cursor: pointer;
   padding-bottom: 8px;
   border-radius: 2px;
-  font-size: 1.1rem;
+  font-size: 1.0rem;
   text-decoration: none;
 }
 
 a:hover{
   color: #f59e0b;
 }
+.nav-links a{
+  font-size: 1.1rem;
+}
+
+
 .nav-links a:active{
   border: 0px;
 }
@@ -128,7 +156,8 @@ pre{
 pre code {
   background-color: rgba(255,255,255,0.08);
   display: block;
-  padding: 20px;
+  padding: 1rem;
+  margin-bottom: 2rem;
 }
 
 /* LiveView specific classes for your customizations */
