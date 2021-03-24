@@ -11,13 +11,18 @@
 
 @tailwind utilities;
 
+
+html {
+font-size: 18px;
+}
+
 body{
   font-family: 'Montserrat', monospace;
   max-width: 45em;
   margin: 16px auto auto;
   padding: 32px;
   font-weight: 400;
-  color: rgba(255,255,255,0.67);
+  color: rgba(255,255,255,0.8);
 }
 
 h1{
@@ -64,6 +69,11 @@ h5{
     font-weight: 500;
 
 }
+
+img{
+    background-color: #fff7dd;
+}
+
 
 
 ul {

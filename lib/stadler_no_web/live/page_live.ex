@@ -35,7 +35,6 @@ defmodule StadlerNoWeb.PageLive do
     ~L"""
      	<%= menu_page(assigns) %>
     <%= case @page do %>
-     	<% "home" -> %>
      	<% "projects" -> %> <%= projects_page(assigns) %>
      	<% "live_chat" -> %> <%= plain_markdown(assigns, 'https://raw.githubusercontent.com/askasp/live_tea/main/Blag.md') %>
      	<% "led" -> %> <%= plain_markdown(assigns, 'https://gitlab.com/akselsk/led-thermometer/-/raw/master/README.md') %>
@@ -45,18 +44,27 @@ defmodule StadlerNoWeb.PageLive do
      	<%= home_made_es_page(assigns) %>
      	<% "live_md" -> %>
      	<%= plain_markdown(assigns,'https://gitlab.com/akselsk/live_markdown/-/raw/master/README.md') %>
-      <% _ -> %>  <% home_page(assigns) %>
+      <% _ -> %>  <%= home_page(assigns) %>
     <% end %>
     """
   end
 
   def home_page(assigns) do
     ~L"""
-      <div class="text-center">
-      	<h1 style="border: 0px;" class="text-yellow-500 text-3xl">Aksel Stadler</h1>
-      	<h1 style="border: 0px;" class="text-white opacity-67 text-sm ">Robotics Engineer & Programmer</h1>
-      </div>
-      <%= menu_page(assigns) %>
+    <p>
+    I'm a norwegian software developer with a MSc in mathematics/robotics. I graduated in 2017 and my thesis was to develop real-time
+    software to autonomously track underwater cables with an underwater robot.
+    <a href="https://github.com/askasp/Cable_Localization_by_magnetomers/raw/6a9872a6925cc762305d256c68898638a9b5f148/Master%20(1).pdf"> Link to thesis</a>
+    </p>
+
+    <p>
+    In work life I started in the "defence" sector, and moved on to working with payment infrastructure in a norwegian fintech called Vipps. Currently, I'm
+    working at <a href="https://dignio.com"> Dignio </a>, a startup within remote care.  So the ethical aspect of my work is strictly increasing!
+    </p>
+
+    <p>
+    My greatest achievements are taking 23  consecutive pull ups, and running a 5km on 17.16
+    </p>
 
     """
   end
